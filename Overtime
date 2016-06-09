@@ -1,0 +1,64 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 work_start work_end [reason]"
+  exit 1
+fi
+
+FILENAME="/var/tmp/Overtime_report.txt"
+
+WORK_START="$1"
+WORK_END="$2"
+
+REASON="Tight deadline in C# project."
+if [ $# -gt 2 ]; then
+  REASON=$3
+fi
+
+EMPLOYEE="Adam Szczerbiak"
+PROJECT_NAME="C# EFL"
+START_HOURS=$(echo "$WORK_START" | awk '{split($0,time,":")} END{print time[1]}')
+START_MINUTES=$(echo "$WORK_START" | awk '{split($0,time,":")} END{print time[2]}')
+START_TOTAL_MINUTES=$(( (60 * $START_HOURS) + $START_MINUTES ))
+
+END_HOURS=$(echo "$WORK_END" | awk '{split($0,time,":")} END{print time[1]}')
+END_MINUTES=$(echo "$WORK_END" | awk '{split($0,time,":")} END{print time[2]}')
+END_TOTAL_MINUTES=$(( (60 * $END_HOURS) + $END_MINUTES ))
+
+TOTAL_MINUTES_AT_WORK=$(( $END_TOTAL_MINUTES - $START_TOTAL_MINUTES ))
+HOURS_AT_WORK=$(( $TOTAL_MINUTES_AT_WORK / 60 ))
+MINUTES_AT_WORK=$(( $TOTAL_MINUTES_AT_WORK % 60 ))
+
+OVERTIME_START_HOURS=$(( $START_HOURS + 9 ))
+OVERTIME_START_TOTAL_MINUTES=$(( $START_TOTAL_MINUTES + 540 ))
+OVERTIME_START_STRING=$(printf "%02d:%02d" "$OVERTIME_START_HOURS" "$START_MINUTES")
+
+OVERTIME_TOTAL_MINUTES=$(( $END_TOTAL_MINUTES - $OVERTIME_START_TOTAL_MINUTES ))
+OVERTIME_HOURS=$(( $OVERTIME_TOTAL_MINUTES / 60 ))
+OVERTIME_MINUTES=$(( $OVERTIME_TOTAL_MINUTES % 60 ))
+
+printf "Time spent working: %02d:%02d\n" "$HOURS_AT_WORK" "$MINUTES_AT_WORK"
+printf "Total overtime: %02d:%02d\n" "$OVERTIME_HOURS" "$OVERTIME_MINUTES"
+printf "\n\n"
+
+printf "%-30s %s\n" "1. Employee:" "$EMPLOYEE"
+printf "%-30s %s\n" "2. Project name:" "$PROJECT_NAME"
+printf "%-30s %s\n" "3. Reason:" "$REASON"
+printf "%-30s %s\n" "4. Work started at:" "$WORK_START"
+printf "%-30s %s\n" "5. Overtime started at:" "$OVERTIME_START_STRING"
+printf "%-30s %s\n" "6. Overtime ended at:" "$WORK_END"
+printf "%-30s %s\n" "7. Settlement:" "Payment"
+
+# This will result in clearing a $FILENAME file or creating a new one:
+> "$FILENAME"
+if [ $? -eq 0 ]; then
+  printf "%-30s %s\n" "1. Employee:" "$EMPLOYEE"                           >> "$FILENAME"
+  printf "%-30s %s\n" "2. Project name:" "$PROJECT_NAME"                   >> "$FILENAME"
+  printf "%-30s %s\n" "3. Reason:" "$REASON"                               >> "$FILENAME"
+  printf "%-30s %s\n" "4. Work started at:" "$WORK_START"                  >> "$FILENAME"
+  printf "%-30s %s\n" "5. Overtime started at:" "$OVERTIME_START_STRING"   >> "$FILENAME"
+  printf "%-30s %s\n" "6. Overtime ended at:" "$WORK_END"                  >> "$FILENAME"
+  printf "%-30s %s\n" "7. Settlement:" "Payment"                           >> "$FILENAME"
+
+  leafpad "$FILENAME"
+fi
