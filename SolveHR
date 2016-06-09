@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# TITLE: SolveHR.sh
+# DESCRIPTION:
+# AUTHOR: simba (szczerbiakadam@gmail.com)
+# DATE: 04-2016
+# VERSION 0.2
+
+HR_DIRECTORY="$HOME/Source/Learning/HackerRank"
+CHALLENGE_NAME=$1
+CHALLENGE_LINK=$2
+CHALLENGE_DIRECTORY=$HR_DIRECTORY/$1
+CHALLENGE_SOLUTION=$CHALLENGE_DIRECTORY/$1.cc
+
+function print_not_enough_parameters {
+  printf "Error: SolveHR script should be executed with exactly two parameters:\n"
+  printf " 1) The directory & source code file name.\n"
+  printf " 2) Link to the challenge webpage.\n"
+}
+
+function init_solution_file {
+  printf "%s\n"\
+      "/*"\
+      "Solution to the \"${CHALLENGE_NAME}\" challenge by HackerRank:"\
+      "${CHALLENGE_LINK}"\
+      "by simba (szczerbiakadam@gmail.com)."\
+      "*/"\
+      ""\
+      "#include <iostream>"\
+      ""\
+      "int main(int argc, char **argv)"\
+      "{"\
+      "  int T;"\
+      "  std::cin >> T;"\
+      ""\
+      "  for(int t = 0; t < T; ++t)"\
+      "  {"\
+      "    "\
+      "  }"\
+      ""\
+      "  return 0;"\
+      "}"\
+      > ${CHALLENGE_SOLUTION}
+}
+
+function get_problem_specification {
+  printf "Fetching problem specification: not yet implemented!\n"
+}
+
+if [ $# -ne 2 ]; then
+  print_not_enough_parameters
+  exit 1
+fi
+
+
+mkdir -p ${CHALLENGE_DIRECTORY}
+get_problem_specification
+init_solution_file ${CHALLENGE_SOLUTION}
+vim ${CHALLENGE_SOLUTION}
