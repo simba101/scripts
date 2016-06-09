@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Name:        Worktime
+# Description: Prints out a graph showing how much time has passed since
+#              the beginning of work this day.
+# Args:        None, but depends on a variable: WORKTIME_START
+
+# Checks whether global variable WORKTIME_START is set - the script will halt if not.
+if [ -z "$WORKTIME_START" ]; then
+  printf "Worktime error: WORKTIME_START has not been set!\nExiting.\n"
+  exit 1
+fi
+
+printf "Work started on %s\n" "$WORKTIME_START"
+START_TIME_H=$(echo "$WORKTIME_START" | awk '{split($0,t,":")} END{print t[1]}')
+START_TIME_M=$(echo "$WORKTIME_START" | awk '{split($0,t,":")} END{print t[2]}')
+START_TIME_MINUTES=$(( (60 * $START_TIME_H) + $START_TIME_M ))
+START_TIME_SECONDS=$(( (3600 * $START_TIME_H) + (60 * $START_TIME_M) ))
+
+WIDTH=$(tput cols)
+TARGET_TIME_MIN=28800   # Minimum work time is 8 hours = 480 minutes = 28800 seconds.
+TARGET_TIME_MAX=32400   # Maximum work time is 9 hours = 540 minutes = 32400 seconds.
+
+CURRENT_TIME=$(date +%-H:%-M:%-S)
+CURRENT_TIME_H=$(echo "$CURRENT_TIME" | awk '{split($0,t,":")} END{print t[1]}')
+CURRENT_TIME_M=$(echo "$CURRENT_TIME" | awk '{split($0,t,":")} END{print t[2]}')
+CURRENT_TIME_S=$(echo "$CURRENT_TIME" | awk '{split($0,t,":")} END{print t[3]}')
+
+CURRENT_TIME_MINUTES=$(( (60 * $CURRENT_TIME_H) + $CURRENT_TIME_M ))
+CURRENT_TIME_SECONDS=$(( (60 * $CURRENT_TIME_MINUTES) + $CURRENT_TIME_S ))
+
+WORK_SECONDS=$(( $CURRENT_TIME_SECONDS - $START_TIME_SECONDS ))
+WORK_H=$(( $WORK_SECONDS / 3600 ))
+TEMP=$(( $WORK_SECONDS % 3600 ))
+WORK_M=$(( $TEMP / 60 ))
+WORK_S=$(( $TEMP % 60 ))
+
+PERCENT_DONE_MIN=$(bc <<<"scale=2; 100 * $WORK_SECONDS / $TARGET_TIME_MIN")
+PERCENT_DONE_MAX=$(bc <<<"scale=2; 100 * $WORK_SECONDS / $TARGET_TIME_MAX")
+
+# Prints out a nice graph:
+
+GRAPH_MARK_MAX=$(( ($WIDTH * 4 / 5) - 1 )) #ending max position: 80%
+GRAPH_MARK_MIN_F=$(bc <<<"scale=2; (8 * $GRAPH_MARK_MAX / 9) - 1")
+GRAPH_MARK_MIN=${GRAPH_MARK_MIN_F%.*}
+GRAPH_MARKS_DIFF=$(( $GRAPH_MARK_MAX - $GRAPH_MARK_MIN ))
+
+perl -E "print ' ' x $GRAPH_MARK_MIN"
+printf "%s" "|"
+perl -E "print ' ' x $GRAPH_MARKS_DIFF"
+printf "%s\n" "|"
+
+GRAPH_BAR_WIDTH_F=$(bc <<<"0.008 * $WIDTH * $PERCENT_DONE_MAX")
+GRAPH_BAR_WIDTH=${GRAPH_BAR_WIDTH_F%.*}
+perl -E "print '●' x $GRAPH_BAR_WIDTH"
+printf "\n\n"
+
+
+printf "Time spent at work: %s:%s\nMin: %s%%\nMax: %s%%\n"\
+    "$WORK_H" "$WORK_M" "$PERCENT_DONE_MIN" "$PERCENT_DONE_MAX"
