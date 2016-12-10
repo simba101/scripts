@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+"""
+Prints out the list of all factors of a given number.
+Totally non-optimized naive implementation, so it may take a long time,
+especially for larger numbers.
+
+Author: simba (szczerbiakadam@gmail.com)
+Written on: 2016-02-12, last modified: 2016-12-10.
+License: MIT.
+
+Usage: Factors <number>, e.g. Factors 12345
+"""
+
+import math, sys
+
+def list_of_factors(n):
+    factors = []
+    # A special case: appends all the factors of 2:
+    while(0 == n % 2):
+        factors.append(2)
+        n /= 2
+
+    # Appends the rest of the prime factors, checks only odd integers:
+    divisor = 3
+    while(divisor <= n):
+        while(0 == n % divisor):
+            factors.append(divisor)
+            n /= divisor
+
+        divisor += 2
+
+    return factors
+
+def main():
+    if(len(sys.argv) < 2):
+        print("Error: Please provide a number to factorize.")
+        sys.exit(-1)
+
+    number = int(sys.argv[1])
+    print(list_of_factors(number))
+
+
+
+if __name__ == "__main__":
+    main()
